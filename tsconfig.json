@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "lib": ["DOM", "ESNext"],
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
+        "noImplicitAny": true,
+        "strict": false,
+        "allowJs": true,
+        "skipLibCheck": true,
+        "baseUrl": "./src",
+        "outDir": "dist",
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+        "removeComments": true,
+        "declarationDir": "dist/types",
+        "jsx": "react-jsx"
+    },
+    "include": ["src", ""],
+    "exclude": ["node_modules", "dist", "**/*.test.tsx"]
+}
