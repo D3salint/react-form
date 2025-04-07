@@ -1,4 +1,4 @@
-import { AxiosError, AxiosRequestConfig } from "axios";
+import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 export interface FormSubmit<Fields> {
     endpoint: string;
@@ -7,7 +7,7 @@ export interface FormSubmit<Fields> {
     resetData?: boolean;
     transformData?: (data: Fields) => any;
     onError?: (error: AxiosError<any, any>) => void;
-    onResponse?: (serverData: unknown) => void;
+    onResponse?: <T = any>(serverData: AxiosResponse<T>) => void;
 }
 
 export type FormSubmitNative<Fields> = 

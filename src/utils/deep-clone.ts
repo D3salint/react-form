@@ -4,7 +4,7 @@ export function deepClone<T extends object>(input: T):T {
         : {};
 
     for(const [name, value] of Object.entries(input)) {
-        obj[name] = typeof value === 'object'
+        obj[name] = (typeof value === 'object' && value !== null)
             ? deepClone(value)
             : value;
     }

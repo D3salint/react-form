@@ -8,7 +8,7 @@
         "forceConsistentCasingInFileNames": true,
         "allowSyntheticDefaultImports": true,
         "noImplicitAny": true,
-        "strict": false,
+        "strict": true,
         "allowJs": true,
         "skipLibCheck": true,
         "baseUrl": "./src",
@@ -20,6 +20,6 @@
         "declarationDir": "dist/types",
         "jsx": "react-jsx"
     },
-    "include": ["src", ""],
+    "include": ["src"],
     "exclude": ["node_modules", "dist", "**/*.test.tsx"]
 }
