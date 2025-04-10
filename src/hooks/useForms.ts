@@ -71,14 +71,19 @@ function useForms<Fields>(props: FormProps<Fields>) {
         core.rerender();
     };
 
-    const validate = (options?: { scrollToInputs?: boolean }) => {
+    const validate = (options?: { 
+        scrollToInputs?: boolean;
+        touchAll?: boolean; 
+    }) => {
         const errors = getValidation(
             validationOptions.schema,
             core.state.values
         );
 
-        for(const name of Object.keys(errors)) {
-            core.setTouched({ [name]: true } as any);
+        if(options?.touchAll) {
+            for(const name of Object.keys(errors)) {
+                core.setTouched({ [name]: true } as any);
+            }
         }
 
         if(options?.scrollToInputs) {
@@ -117,7 +122,8 @@ function useForms<Fields>(props: FormProps<Fields>) {
 
         if(validationOptions.on.submit) {
             const errors = validate({  
-                scrollToInputs: validationOptions.invalidScrollToEl
+                scrollToInputs: validationOptions.invalidScrollToEl,
+                touchAll: true
             });
             if(Object.keys(errors).length > 0) {
                 core.setSubmitted(true);
