@@ -1,26 +1,23 @@
 "use client";
 
-import React, { useMemo } from 'react';
-import axios from 'axios';
-import useFormsCore from './useFormsCore';
-import { FormProps } from '../types/index.type';
-import { getValue, scrollToError, setValue } from '../utils';
-import { getValidation, propsToDefaultValidation } from '../validation';
-import { DotNotation } from '../types/components.types';
+import React, { useMemo } from "react";
+import axios from "axios";
+import useFormsCore from "./useFormsCore";
+import { FormProps } from "../types/index.type";
+import { getValue, scrollToError, setValue } from "../utils";
+import { getValidation, propsToDefaultValidation } from "../validation";
+import { DotNotation } from "../types/components.types";
 
 function useForms<Fields>(props: FormProps<Fields>) {
     const core = useFormsCore<Fields>(props);
 
-    const validationOptions = useMemo(
-        () => propsToDefaultValidation(props.validation), 
-        [props.validation]
-    );
-    
+    const validationOptions = useMemo(() => propsToDefaultValidation(props.validation), [props.validation]);
+
     const updateValue = (key: DotNotation<Fields>, value: unknown) => {
         let currentValue = getValue(core.state.values, key);
 
-        if(Array.isArray(currentValue)) {
-            if(currentValue.includes(value)) {
+        if (Array.isArray(currentValue)) {
+            if (currentValue.includes(value)) {
                 currentValue = currentValue.filter((item) => item !== value);
             } else {
                 currentValue.push(value);
@@ -28,7 +25,7 @@ function useForms<Fields>(props: FormProps<Fields>) {
         } else {
             currentValue = value;
         }
-        
+
         setValue(key, currentValue, core.state.values);
     };
 
@@ -49,11 +46,11 @@ function useForms<Fields>(props: FormProps<Fields>) {
 
     const setFieldValue = (key: DotNotation<Fields>, value: unknown, shouldValidate?: boolean) => {
         updateValue(key, value);
-        
-        if(shouldValidate) {
+
+        if (shouldValidate) {
             validate();
         }
-        
+
         core.rerender();
     };
 
@@ -61,7 +58,7 @@ function useForms<Fields>(props: FormProps<Fields>) {
         setTouched({ [key]: value } as any);
     };
 
-    const setErrorValue = (key: DotNotation<Fields>, value: boolean) => {
+    const setErrorValue = (key: DotNotation<Fields>, value: boolean | string) => {
         core.setErrors({ [key]: value } as any);
         core.rerender();
     };
@@ -71,22 +68,16 @@ function useForms<Fields>(props: FormProps<Fields>) {
         core.rerender();
     };
 
-    const validate = (options?: { 
-        scrollToInputs?: boolean;
-        touchAll?: boolean; 
-    }) => {
-        const errors = getValidation(
-            validationOptions.schema,
-            core.state.values
-        );
+    const validate = (options?: { scrollToInputs?: boolean; touchAll?: boolean }) => {
+        const errors = getValidation(validationOptions.schema, core.state.values);
 
-        if(options?.touchAll) {
-            for(const name of Object.keys(errors)) {
+        if (options?.touchAll) {
+            for (const name of Object.keys(errors)) {
                 core.setTouched({ [name]: true } as any);
             }
         }
 
-        if(options?.scrollToInputs) {
+        if (options?.scrollToInputs) {
             scrollToError(errors);
         }
 
@@ -97,11 +88,40 @@ function useForms<Fields>(props: FormProps<Fields>) {
         return errors;
     };
 
+    const validateFields = (
+        keys?: DotNotation<Fields>[],
+        options?: {
+            touch?: boolean;
+        }
+    ) => {
+        const errors = getValidation(validationOptions.schema, core.state.values);
+        const setupErrors: Record<string,string> = {};
+
+        for(const [key, value] of Object.entries(errors)) {
+            if(!keys || keys.includes(key as any)) {
+                setupErrors[key] = value;
+            }
+        }
+
+        if(options) {
+            if(options.touch) {
+                for(const key of Object.keys(setupErrors)) {
+                    core.setTouched({ [key]: true } as any);
+                }
+            }
+        }
+        
+        core.setErrors(setupErrors);
+        core.rerender();
+
+        return setupErrors;
+    };
+
     const handleChange = (ev: React.ChangeEvent) => {
         const target = ev.target as HTMLInputElement;
         const { name, value } = target;
         setFieldValue(name as any, value, false);
-        if(validationOptions.on.change) {
+        if (validationOptions.on.change) {
             validate();
         }
     };
@@ -110,7 +130,7 @@ function useForms<Fields>(props: FormProps<Fields>) {
         const target = ev.target as HTMLInputElement;
         const name = target.name;
         setTouchedValue(name as any, true);
-        if(validationOptions.on.blur) {
+        if (validationOptions.on.blur) {
             validate();
         }
     };
@@ -120,43 +140,33 @@ function useForms<Fields>(props: FormProps<Fields>) {
 
         const { submit } = props;
 
-        if(validationOptions.on.submit) {
-            const errors = validate({  
+        if (validationOptions.on.submit) {
+            const errors = validate({
                 scrollToInputs: validationOptions.invalidScrollToEl,
-                touchAll: true
+                touchAll: true,
             });
-            if(Object.keys(errors).length > 0) {
+            if (Object.keys(errors).length > 0) {
                 core.setSubmitted(true);
                 core.rerender();
                 return;
             }
         }
 
-        if(typeof submit === 'function') {
+        if (typeof submit === "function") {
             return submit(core.state.values, event);
         }
 
-        if(!submit) { return; }
+        if (!submit) {
+            return;
+        }
 
-        const { 
-            endpoint, 
-            config, 
-            method = "POST",
-            resetData,
-            onError,
-            onResponse,
-            transformData 
-        } = submit;
+        const { endpoint, config, method = "POST", resetData, onError, onResponse, transformData } = submit;
 
         try {
             core.setSubmitting(true);
             core.rerender();
 
-            const axiosConfig = typeof config === 'function'
-                ? config()
-                : typeof config === 'object'
-                    ? config
-                    : {};
+            const axiosConfig = typeof config === "function" ? config() : typeof config === "object" ? config : {};
 
             const data = transformData ? transformData(core.state.values) : core.state.values;
             const response = await axios({
@@ -167,11 +177,11 @@ function useForms<Fields>(props: FormProps<Fields>) {
             });
             onResponse?.(response);
         } catch (error) {
-            if(axios.isAxiosError(error)) {
+            if (axios.isAxiosError(error)) {
                 onError?.(error);
             }
         } finally {
-            if(resetData) {
+            if (resetData) {
                 core.resetState();
             }
             core.setSubmitted(true);
@@ -181,15 +191,16 @@ function useForms<Fields>(props: FormProps<Fields>) {
     };
 
     const getError = (field: DotNotation<Fields>, touched?: boolean) => {
-        const err = core.state.errors[field  as keyof typeof core.state.errors] as (string | undefined);
-        if(touched && !core.state.touched[field as keyof typeof core.state.touched]) {
+        const err = core.state.errors[field as keyof typeof core.state.errors] as string | undefined;
+        if (touched && !core.state.touched[field as keyof typeof core.state.touched]) {
             return;
-        };
+        }
         return err;
     };
 
     return {
         ...core.state,
+        validateFields,
         handleChange,
         handleBlur,
         handleSubmit,
@@ -200,7 +211,7 @@ function useForms<Fields>(props: FormProps<Fields>) {
         setFields,
         setErrors,
         resetForm,
-        getError
+        getError,
     };
 }
 
