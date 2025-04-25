@@ -89,7 +89,7 @@ function useForms<Fields>(props: FormProps<Fields>) {
     };
 
     const validateFields = (
-        keys?: DotNotation<Fields>[],
+        keys: DotNotation<Fields>[],
         options?: {
             touch?: boolean;
         }
@@ -97,15 +97,13 @@ function useForms<Fields>(props: FormProps<Fields>) {
         const errors = getValidation(validationOptions.schema, core.state.values);
         const setupErrors: Record<string,string> = {};
 
-        for(const [key, value] of Object.entries(errors)) {
-            if(!keys || keys.includes(key as any)) {
-                setupErrors[key] = value;
-            }
+        for(const key of keys) {
+            setupErrors[key] = errors[key];
         }
 
         if(options) {
             if(options.touch) {
-                for(const key of Object.keys(setupErrors)) {
+                for(const key of keys) {
                     core.setTouched({ [key]: true } as any);
                 }
             }
@@ -201,6 +199,7 @@ function useForms<Fields>(props: FormProps<Fields>) {
     return {
         ...core.state,
         validateFields,
+        validate,
         handleChange,
         handleBlur,
         handleSubmit,
