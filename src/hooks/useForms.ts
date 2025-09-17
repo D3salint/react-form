@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import axios from "axios";
 import useFormsCore from "./useFormsCore";
-import { FormProps } from "../types/index.type";
+import { FormProps, FormStatus } from "../types/index.type";
 import { getValue, scrollToError, setValue } from "../utils";
 import { getValidation, propsToDefaultValidation } from "../validation";
 import { DotNotation } from "../types/components.types";
@@ -14,23 +14,15 @@ function useForms<Fields>(props: FormProps<Fields>) {
     const validationOptions = useMemo(() => propsToDefaultValidation(props.validation), [props.validation]);
 
     const updateValue = (key: DotNotation<Fields>, value: unknown) => {
-        let currentValue = getValue(core.state.values, key);
-
-        if (Array.isArray(currentValue)) {
-            if (currentValue.includes(value)) {
-                currentValue = currentValue.filter((item) => item !== value);
-            } else {
-                currentValue.push(value);
-            }
-        } else {
-            currentValue = value;
-        }
-
-        setValue(key, currentValue, core.state.values);
+        setValue(key, value, core.state.values);
     };
 
-    const setFields: typeof core.setFields = (fields) => {
+    const setFields: typeof core.setFields = (fields, shouldValidate) => {
         core.setFields(fields);
+        if(shouldValidate) {
+            const errors = getValidation(validationOptions.schema, core.state.values);
+            core.setErrors(errors)
+        }
         core.rerender();
     };
 
@@ -48,7 +40,8 @@ function useForms<Fields>(props: FormProps<Fields>) {
         updateValue(key, value);
 
         if (shouldValidate) {
-            validate();
+            const errors = getValidation(validationOptions.schema, core.state.values);
+            core.setErrors({...core.state.errors, [key]: errors[key] });
         }
 
         core.rerender();
@@ -133,6 +126,17 @@ function useForms<Fields>(props: FormProps<Fields>) {
         }
     };
 
+    const setStatus = (status: FormStatus) => {
+        core.setStatus(status);
+        core.rerender();
+    };
+
+    const isValidField = (key: DotNotation<Fields>) => {
+        const isTouched = core.state.touched[key as keyof typeof core.state.touched];
+        const hasError = core.state.errors[key as keyof typeof core.state.errors]
+        return isTouched && !hasError;
+    }
+
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -161,6 +165,7 @@ function useForms<Fields>(props: FormProps<Fields>) {
         const { endpoint, config, method = "POST", resetData, onError, onResponse, transformData } = submit;
 
         try {
+            core.setStatus(FormStatus.PENDING)
             core.setSubmitting(true);
             core.rerender();
 
@@ -174,10 +179,12 @@ function useForms<Fields>(props: FormProps<Fields>) {
                 data,
             });
             onResponse?.(response);
+            core.setStatus(FormStatus.SUCCESS)
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 onError?.(error);
             }
+            core.setStatus(FormStatus.ERROR)
         } finally {
             if (resetData) {
                 core.resetState();
@@ -211,6 +218,8 @@ function useForms<Fields>(props: FormProps<Fields>) {
         setErrors,
         resetForm,
         getError,
+        setStatus,
+        isValidField
     };
 }
 

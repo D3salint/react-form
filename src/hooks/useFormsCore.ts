@@ -3,7 +3,7 @@
 import React from 'react';
 import { deepClone } from '../utils/deep-clone';
 import { OptionalObject, RecordOptional } from '../types/components.types';
-import { FormProps, FormState } from '../types/index.type';
+import { FormProps, FormState, FormStatus } from '../types/index.type';
 import {
     type ActionType,
     FormReducerActionEnum,
@@ -14,8 +14,9 @@ interface FormsCoreOutput<Fields> {
     state: FormState<Fields>;
     clearErrors: () => void;
     setErrors: (errors: RecordOptional<Fields, any>) => void;
-    setFields: (values: OptionalObject<Fields>) => void;
+    setFields: (values: OptionalObject<Fields>, shouldValidate?: boolean) => void;
     setTouched: (values: RecordOptional<Fields, boolean>) => void;
+    setStatus: (status: FormStatus) => void;
     setSubmitted: (value: boolean) => void;
     setSubmitting: (value: boolean) => void;
     rerender: () => void;
@@ -30,6 +31,7 @@ function useFormsCore<Fields>(
         values: props.initialValues,
         errors: props.initialErrors || ({} as any),
         touched: props.initialTouched || ({} as any),
+        status: FormStatus.FILLING,
         isSubmitting: false,
         isSubmitted: false,
     });
@@ -51,6 +53,13 @@ function useFormsCore<Fields>(
         }
         return false;
     }, []);
+
+    const setStatus = (status: FormStatus) => {
+        dispatch({
+            type: FormReducerActionEnum.SET_STATUS,
+            payload: status
+        })
+    }
 
     const setFields = (values: OptionalObject<Fields>) => {
         dispatch({
@@ -112,6 +121,7 @@ function useFormsCore<Fields>(
         setSubmitted,
         setTouched,
         resetState,
+        setStatus,
         rerender,
         clearErrors
     } as const;

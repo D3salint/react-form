@@ -1,6 +1,6 @@
 {
-    "name": "@axseee/react-form",
-    "version": "1.0.8",
+    "name": "@desdev/react-form",
+    "version": "1.0.5",
     "main": "dist/index.cjs.js",
     "module": "dist/index.esm.js",
     "types": "dist/index.d.ts",
@@ -23,12 +23,15 @@
         "react-hook-form",
         "hook"
     ],
-    "author": "axsee",
+    "publishConfig": {
+        "access": "public"
+    },
+    "author": "d3salint",
     "license": "ISC",
     "description": "",
     "repository": {
         "type": "git",
-        "url": "https://github.com/NotDaymere/react-form.git"
+        "url": "https://github.com/D3salint/react-form.git"
     },
     "devDependencies": {
         "@rollup/plugin-babel": "^6.0.4",

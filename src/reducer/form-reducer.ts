@@ -1,6 +1,7 @@
 import { FormState } from "../types/index.type";
 
 export enum FormReducerActionEnum {
+    SET_STATUS = 'SET_STATUS',
     SET_FIELD = 'SET_FIELD',
     SET_ERROR = 'SET_ERROR',
     CLEAR_ERRORS = 'CLEAR_ERRORS',
@@ -34,6 +35,8 @@ export function formReducer<Fields>(
             return { ...state, touched: { ...state.touched, ...action.payload } };
         case FormReducerActionEnum.RESET_STATE:
             return { ...action.payload };
+        case FormReducerActionEnum.SET_STATUS:
+            return { ...state, status: action.payload };
         default:
             return state;
     }
