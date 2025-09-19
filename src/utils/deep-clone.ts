@@ -1,4 +1,8 @@
 export function deepClone<T extends object>(input: T):T {
+    if(input instanceof File) {
+        return input;
+    }
+    
     const obj: any = Array.isArray(input) 
         ? []
         : {};

@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import axios from "axios";
 import useFormsCore from "./useFormsCore";
 import { FormProps, FormStatus } from "../types/index.type";
-import { getValue, scrollToError, setValue } from "../utils";
+import { scrollToError, setValue } from "../utils";
 import { getValidation, propsToDefaultValidation } from "../validation";
 import { DotNotation } from "../types/components.types";
 
